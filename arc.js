@@ -252,3 +252,4 @@ var arc = {};
 arc.Coord = Coord;
 arc.Arc = Arc;
 arc.GreatCircle = GreatCircle;
+// Copyright (c) Dane Springmeyer
