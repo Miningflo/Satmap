@@ -73,6 +73,7 @@ class SingleTle {
 
     getSat() {
         // return sat on current location
+        // this.location = new Location(rn(-160, 160), rn(-80, 80));
         return new Sat(this.satname, this.location.convert());
     }
 

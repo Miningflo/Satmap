@@ -7,58 +7,112 @@ let nightlayer = new ol.layer.Vector({
         return new ol.style.Style({
             fill: new ol.style.Fill({
                 color: 'rgba(0,0,0,0.1)'
+            }),
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({
+                    color: '#fffd2f'
+                })
             })
         });
     }
 });
 
 function makecircular(list) {
-    return list.concat(list.slice(0));
+    return list.concat([list[0]]);
 }
 
-function totdays(year) {
-    return isLeapYear(year) ? 366 : 365;
+function torad(x) {
+    return x / 180 * Math.PI;
 }
 
-function isLeapYear(year) {
-    return year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0);
-}
 
-function coords(solar) {
+function getsun() {
     let today = new Date();
     let first = new Date(today.getFullYear(), 0, 1);
-    let day = Math.round(((today - first) / 1000 / 60 / 60 / 24) + .5);
-    console.log(day);
-    console.log(totdays(today.getFullYear()));
-    // let soldec = Math.cos(360/totdays(today.getFullYear()) * (day + 10)) * -23.43665;
-    let m = -3.6 + 0.9856 * day;
-    let v = m + 1.9 * Math.sin(m);
+    let d = Math.round(((today - first) / 1000 / 60 / 60 / 24));
+    let m = -3.6 + 0.9856 * d;
+    let v = m + 1.9 * Math.sin(torad(m));
     let lambda = v + 102.9;
-    let delta = 22.8 * Math.sin(lambda) + 0.6 * Math.pow(Math.sin(lambda), 3);
-    console.log(delta);
+    let delta = -1 * (22.8 * Math.sin(torad(lambda)) + 0.6 * Math.pow(Math.sin(torad(lambda)), 3));
 
-
-    let l = [];
-    for (let i = 0; i <= 360; i++) {
-        l.push(ol.proj.fromLonLat([i - 180, 0]));
-    }
-    l.push(ol.proj.fromLonLat([180, 90]));
-    l.push(ol.proj.fromLonLat([-180, 90]));
-    return [makecircular(l)];
+    let t = today.getUTCHours() + today.getUTCMinutes()/60;
+    let bsun = delta;
+    let lsun = 180 - 15 * t;
+    return [lsun, bsun];
 }
 
-function nightpolys() {
-    // calculate sun pos
-    let sun = [0, 0];
-    return coords(sun);
+function terminator(sun) {
+    let terminator = [];
+    console.log(sun);
+    let l = sun[0];
+    let b = sun[1];
+    for(let w = 0; w < 360; w++){
+        let bb = Math.asin((Math.cos(torad(b)) * Math.sin(torad(w)))) * 180 / Math.PI;
+        let x = - Math.cos(torad(l)) * Math.sin(torad(b)) * Math.sin(torad(w)) - Math.sin(torad(l)) * Math.cos(torad(w));
+        let y = - Math.sin(torad(l)) * Math.sin(torad(b)) * Math.sin(torad(w)) + Math.cos(torad(l)) * Math.cos(torad(w));
+        let ll = Math.atan2(y, x) * 180 / Math.PI;
+        terminator.push([ll, bb]);
+    }
+    terminator.sort((a, b) => a[0] - b[0]);
+    return terminator;
+}
 
+function findedge(p1, p2) {
+    p1[0] += 180;
+    p2[0] -= 180;
+    return p1[1] - (p2[1] - p1[1]) / (p2[0] - p1[0]) * p1[0];
+}
+
+function nightpolys(sun) {
+    let tmn = terminator(sun);
+    if(sun[1] > 0){
+        // our summer
+        let edge = findedge([...tmn[0]], [...tmn.slice(-1)[0]]);
+        tmn.unshift([-180, edge]);
+        tmn.unshift([-180, -90]);
+        tmn.unshift([180, -90]);
+        tmn.unshift([180, edge]);
+        return [makecircular(tmn.map(x => ol.proj.fromLonLat(x)))];
+    }else if(sun[1] < 0){
+        // our winter
+        let edge = findedge([...tmn[0]], [...tmn.slice(-1)[0]]);
+        tmn.unshift([-180, edge]);
+        tmn.unshift([-180, 90]);
+        tmn.unshift([180, 90]);
+        tmn.unshift([180, edge]);
+        return [makecircular(tmn.map(x => ol.proj.fromLonLat(x)))];
+    }else {
+        //equinox
+        let left = tmn.splice(0, tmn.length/2);
+        let right = tmn;
+
+        left.unshift([-90, 90]);
+        left.unshift([-180, 90]);
+        left.unshift([-180, -90]);
+        left.unshift([-90, -90]);
+
+        right.unshift([90, 90]);
+        right.unshift([180, 90]);
+        right.unshift([180, -90]);
+        right.unshift([90, -90]);
+
+        return [
+            makecircular(left.map(x => ol.proj.fromLonLat(x))),
+            makecircular(right.map(x => ol.proj.fromLonLat(x)))
+        ];
+    }
 }
 
 function drawnight() {
     let features = [];
-    let nights = nightpolys();
     nightsrc.clear();
-    // let line = coords([0,0]);
+    let sunloc = getsun();
+    features.push(new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat(sunloc))
+    }));
+
+    let nights = nightpolys(sunloc);
     nights.forEach(night => {
         let poly = new ol.Feature({
             geometry: new ol.geom.Polygon([night])
