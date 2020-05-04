@@ -1,4 +1,4 @@
-loadfile("./tle.txt").then(fulltle => {
+loadfile("./TestTLE/tle.txt").then(fulltle => {
     let tle = loadtle(fulltle);
 
     function draw() {
