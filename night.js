@@ -3,7 +3,6 @@ let nightsrc = new ol.source.Vector();
 let nightlayer = new ol.layer.Vector({
     source: nightsrc,
     style: function (feature) {
-        console.log("applying style");
         return new ol.style.Style({
             fill: new ol.style.Fill({
                 color: 'rgba(0,0,0,0.1)'
@@ -13,6 +12,10 @@ let nightlayer = new ol.layer.Vector({
                 fill: new ol.style.Fill({
                     color: '#fffd2f'
                 })
+            }),
+            stroke: new ol.style.Stroke({
+                color: 'rgb(255,0,9, 0)',
+                width: 2
             })
         });
     }
@@ -29,14 +32,16 @@ function torad(x) {
 
 function getsun() {
     let today = new Date();
+    let offset = document.getElementById("slider").value;
+    today = new Date(today.getTime() + offset*60000);
     let first = new Date(today.getFullYear(), 0, 1);
     let d = Math.round(((today - first) / 1000 / 60 / 60 / 24));
-    let m = -3.6 + 0.9856 * d;
+    let m = -3.6 + 360 / 365.24 * d;
     let v = m + 1.9 * Math.sin(torad(m));
     let lambda = v + 102.9;
     let delta = -1 * (22.8 * Math.sin(torad(lambda)) + 0.6 * Math.pow(Math.sin(torad(lambda)), 3));
 
-    let t = today.getUTCHours() + today.getUTCMinutes()/60;
+    let t = today.getUTCHours() + today.getUTCMinutes()/60 + today.getUTCSeconds()/3600 + today.getUTCMilliseconds()/3600000;
     let bsun = delta;
     let lsun = 180 - 15 * t;
     return [lsun, bsun];
@@ -44,7 +49,6 @@ function getsun() {
 
 function terminator(sun) {
     let terminator = [];
-    console.log(sun);
     let l = sun[0];
     let b = sun[1];
     for(let w = 0; w < 360; w++){
@@ -65,9 +69,10 @@ function findedge(p1, p2) {
 }
 
 function nightpolys(sun) {
-    let tmn = terminator(sun);
+
     if(sun[1] > 0){
         // our summer
+        let tmn = terminator(sun);
         let edge = findedge([...tmn[0]], [...tmn.slice(-1)[0]]);
         tmn.unshift([-180, edge]);
         tmn.unshift([-180, -90]);
@@ -76,6 +81,7 @@ function nightpolys(sun) {
         return [makecircular(tmn.map(x => ol.proj.fromLonLat(x)))];
     }else if(sun[1] < 0){
         // our winter
+        let tmn = terminator(sun);
         let edge = findedge([...tmn[0]], [...tmn.slice(-1)[0]]);
         tmn.unshift([-180, edge]);
         tmn.unshift([-180, 90]);
@@ -84,22 +90,26 @@ function nightpolys(sun) {
         return [makecircular(tmn.map(x => ol.proj.fromLonLat(x)))];
     }else {
         //equinox
-        let left = tmn.splice(0, tmn.length/2);
-        let right = tmn;
+        let leftline = sun[0] - 90;
+        let rightline = sun[0] + 90;
 
-        left.unshift([-90, 90]);
-        left.unshift([-180, 90]);
-        left.unshift([-180, -90]);
-        left.unshift([-90, -90]);
+        let lpoly = [
+            [Math.max(-180, leftline), 90],
+            [Math.max(-180, leftline), -90],
+            [Math.max(-180, leftline - 180), -90],
+            [Math.max(-180, leftline - 180), 90],
+        ];
 
-        right.unshift([90, 90]);
-        right.unshift([180, 90]);
-        right.unshift([180, -90]);
-        right.unshift([90, -90]);
+        let rpoly = [
+            [Math.min(180, rightline), 90],
+            [Math.min(180, rightline), -90],
+            [Math.min(180, rightline + 180), -90],
+            [Math.min(180, rightline + 180), 90],
+        ];
 
         return [
-            makecircular(left.map(x => ol.proj.fromLonLat(x))),
-            makecircular(right.map(x => ol.proj.fromLonLat(x)))
+            makecircular(lpoly.map(x => ol.proj.fromLonLat(x))),
+            makecircular(rpoly.map(x => ol.proj.fromLonLat(x)))
         ];
     }
 }

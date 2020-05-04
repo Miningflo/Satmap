@@ -4,20 +4,83 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./v6.3.1/css/ol.css" type="text/css">
     <style>
-        body{
+        body {
             margin: 0;
         }
+
         #map {
             height: 100vh;
             width: 100%;
         }
+
+        #top {
+            position: absolute;
+            z-index: 5;
+            bottom: 15px;
+            width: 100%;
+
+        }
+
+        #controls {
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            width: 20%;
+            padding: 5px 5px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #slider {
+            width: 100%;
+            display: inline-block;
+        }
+
+        #offset {
+            margin: 2px;
+            font-weight: bold;
+        }
+
+        #offset::selection {
+            background-color: inherit;
+            color: inherit;
+        }
+
+        /*#slider::-webkit-slider-thumb {*/
+        /*    margin-top: -7px; !* You need to specify a margin in Chrome, but in Firefox and IE it is automatic *!*/
+        /*}*/
+
+        /*#slider::-webkit-slider-runnable-track{*/
+        /*    height: 8px;*/
+        /*    background: #367ebd;*/
+        /*    border-radius: 10px;*/
+        /*}*/
     </style>
     <script src="./v6.3.1/build/ol.js"></script>
     <title>Satmap</title>
 </head>
 <body>
-<div id="map"></div>
-<script src="arc.js"></script>
+<div id="map">
+    <div id="top">
+        <div id="controls">
+            <p id="offset">+0 min</p>
+            <input id="slider" type="range" min="-120" max="120" value="0" step="1"/>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("slider").addEventListener('input', function () {
+        document.getElementById("offset").innerText = (this.value < 0 ? "" : "+") + this.value + " min";
+    });
+
+    document.getElementById("controls").addEventListener('dblclick', function () {
+        document.getElementById("slider").value = 0;
+        document.getElementById("offset").innerText = "+0 min";
+    })
+</script>
+<script src="sgp4.js"></script>
 <script src="classes.js"></script>
 <script src="map.js"></script>
 <script src="paths.js"></script>

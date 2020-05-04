@@ -1,8 +1,4 @@
-let satfeatures = [];
-
-let satsrc = new ol.source.Vector({
-    features: satfeatures
-});
+let satsrc = new ol.source.Vector();
 
 let satlayer = new ol.layer.Vector({
     source: satsrc,
@@ -13,7 +9,7 @@ let satlayer = new ol.layer.Vector({
                 fill: new ol.style.Fill({
                     color: 'white'
                 }),
-                text: map.getView().getZoom() >= 5 ? feature.get('name') : "",
+                text: map.getView().getZoom() >= 4 ? feature.get('name') : "",
                 textAlign: 'end',
                 offsetX: 5,
                 offsetY: -10,
@@ -34,7 +30,7 @@ let satlayer = new ol.layer.Vector({
 });
 
 function drawsats(sats){
-    satfeatures = [];
+    let satfeatures = [];
     satsrc.clear();
     sats.forEach(sat => {
         let point = new ol.Feature({

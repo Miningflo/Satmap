@@ -1,8 +1,4 @@
-let paths = [];
-
-let pathsrc = new ol.source.Vector({
-    features: paths
-});
+let pathsrc = new ol.source.Vector();
 
 let pathlayer = new ol.layer.Vector({
     source: pathsrc,
@@ -18,7 +14,7 @@ let pathlayer = new ol.layer.Vector({
 });
 
 function drawpaths(predictions){
-    paths = [];
+    let paths = [];
     pathsrc.clear();
     predictions.forEach(prediction => {
         let ls = new ol.Feature({
