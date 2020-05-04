@@ -1,6 +1,7 @@
 loadfile("https://www.celestrak.com/NORAD/elements/starlink.txt").then(fulltle => {
     let tle = loadtle(fulltle);
     console.log(tle);
+
     function draw() {
         requestAnimationFrame(draw);
         drawnight();
@@ -26,5 +27,5 @@ loadfile("https://www.celestrak.com/NORAD/elements/starlink.txt").then(fulltle =
         }));
     }
 
-    draw();
+    // draw();
 });
