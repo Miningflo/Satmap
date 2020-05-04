@@ -1,6 +1,6 @@
-loadfile("./TestTLE/tle.txt").then(fulltle => {
+loadfile("https://www.celestrak.com/NORAD/elements/starlink.txt").then(fulltle => {
     let tle = loadtle(fulltle);
-
+    console.log(tle);
     function draw() {
         requestAnimationFrame(draw);
         drawnight();
