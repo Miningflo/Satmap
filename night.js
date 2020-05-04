@@ -29,24 +29,6 @@ function torad(x) {
     return x / 180 * Math.PI;
 }
 
-
-function getsun() {
-    let today = new Date();
-    let offset = document.getElementById("slider").value;
-    today = new Date(today.getTime() + offset*60000);
-    let first = new Date(today.getFullYear(), 0, 1);
-    let d = Math.round(((today - first) / 1000 / 60 / 60 / 24));
-    let m = -3.6 + 360 / 365.24 * d;
-    let v = m + 1.9 * Math.sin(torad(m));
-    let lambda = v + 102.9;
-    let delta = -1 * (22.8 * Math.sin(torad(lambda)) + 0.6 * Math.pow(Math.sin(torad(lambda)), 3));
-
-    let t = today.getUTCHours() + today.getUTCMinutes()/60 + today.getUTCSeconds()/3600 + today.getUTCMilliseconds()/3600000;
-    let bsun = delta;
-    let lsun = 180 - 15 * t;
-    return [lsun, bsun];
-}
-
 function terminator(sun) {
     let terminator = [];
     let l = sun[0];
@@ -117,7 +99,11 @@ function nightpolys(sun) {
 function drawnight() {
     let features = [];
     nightsrc.clear();
-    let sunloc = getsun();
+    // let sunloc = getsun();
+    let date = new Date();
+    let offset = parseInt(document.getElementById("slider").value);
+    date = new Date(date.getTime() + offset*60000);
+    let sunloc = Constants.getSolarPosition(date);
     features.push(new ol.Feature({
         geometry: new ol.geom.Point(ol.proj.fromLonLat(sunloc))
     }));

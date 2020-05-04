@@ -6,20 +6,39 @@ class Constants {
     static m = 5.9722 * Math.pow(10, 24);
     static ke = Math.sqrt(this.g * this.m);
     static k2 = 5.413080 * Math.pow(10, -4);
+
+    static torad(x) {
+        return x / 180 * Math.PI;
+    }
+
+    /**
+     * Julian date of epoch
+     * @param year
+     * @param days
+     * @returns {number}
+     */
+    static jdep(year, days) {
+        let yr = (year < 57) ? year + 2000 : year + 1900;
+        let date = new Date(yr, 0, 1);
+        date.setDate(date.getDate() + days);
+        return Math.floor((date.getTime() / 1000 / 60 / 60 / 24) + 2440587.5);
+    }
+
+    static getSolarPosition(date) {
+        let first = new Date(date.getFullYear(), 0, 1);
+        let d = Math.round(((date - first) / 1000 / 60 / 60 / 24));
+        let m = -3.6 + 360 / 365.24 * d;
+        let v = m + 1.9 * Math.sin(this.torad(m));
+        let lambda = v + 102.9;
+        let delta = -1 * (22.8 * Math.sin(this.torad(lambda)) + 0.6 * Math.pow(Math.sin(this.torad(lambda)), 3));
+
+        let t = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600 + date.getUTCMilliseconds() / 3600000;
+        let bsun = delta;
+        let lsun = 180 - 15 * t;
+        return [lsun, bsun];
+    }
 }
 
-/**
- * Julian date of epoch
- * @param year
- * @param days
- * @returns {number}
- */
-function jdep(year, days) {
-    let yr = (year < 57) ? year + 2000 : year + 1900;
-    let date = new Date(yr, 0, 1);
-    date.setDate(date.getDate() + days);
-    return Math.floor((date.getTime() / 1000 / 60 / 60 / 24) + 2440587.5);
-}
 
 
 /**
@@ -33,7 +52,7 @@ class TLEData {
         this.classification = lines[1].charAt(7);
         this.epochyear = parseInt(lines[1].slice(18, 20));
         this.epochdays = parseFloat(lines[1].slice(20, 32));
-        this.jdsatepoch = jdep(this.epochyear, this.epochdays);
+        this.jdsatepoch = Constants.jdep(this.epochyear, this.epochdays);
         this.ndot = parseFloat(lines[1].slice(33, 43));
         this.nddot = lines[1].slice(44, 52);
         this.bstar = lines[1].slice(53, 61);
