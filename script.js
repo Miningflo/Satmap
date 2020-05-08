@@ -1,4 +1,4 @@
-loadfile("./TestTLE/tle.txt").then(fulltle => {
+fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
     let tle = loadtle(fulltle);
     console.log(tle);
     function draw() {
