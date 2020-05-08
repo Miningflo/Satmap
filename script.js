@@ -10,7 +10,7 @@ fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
             let date = new Date();
             date = new Date(date.getTime() + t * 60000);
             let loc = sat.getLonLat(date);
-            let colour = Constants.isLit(position, date) ? '#4362ff' : '#171b54';
+            let colour = Constants.isLit(date) ? '#4362ff' : '#171b54';
             return new Sat(sat.satname, ol.proj.fromLonLat(loc), colour);
         }));
         drawpaths(tle.map(sat => {
@@ -21,7 +21,7 @@ fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
                 t += parseFloat(document.getElementById("slider").value);
                 let date = new Date();
                 date = new Date(date.getTime() + t * 60000);
-                res.push(Constants.getLonLat(sat.sgp4(date).pos));
+                res.push(sat.getLonLat(date));
             }
             return res.map(x => ol.proj.fromLonLat(x));
         }));
