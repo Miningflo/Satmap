@@ -9,8 +9,7 @@ fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
             let t = parseFloat(document.getElementById("slider").value);
             let date = new Date();
             date = new Date(date.getTime() + t * 60000);
-            let position = sat.sgp4(date).pos;
-            let loc = Constants.getLonLat(position);
+            let loc = sat.getLonLat(date);
             let colour = Constants.isLit(position, date) ? '#4362ff' : '#171b54';
             return new Sat(sat.satname, ol.proj.fromLonLat(loc), colour);
         }));
