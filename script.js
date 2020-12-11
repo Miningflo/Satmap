@@ -1,5 +1,5 @@
 fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
-    let tle = loadtle(fulltle);
+    let tle = TLEParser.loadtle(fulltle);
     console.log(tle);
     function draw() {
         requestAnimationFrame(draw);
@@ -10,7 +10,7 @@ fetch("./TestTLE/tle.txt").then(res => res.text()).then(fulltle => {
             let date = new Date();
             date = new Date(date.getTime() + t * 60000);
             let loc = sat.getLonLat(date);
-            let colour = Constants.isLit(date) ? '#4362ff' : '#171b54';
+            let colour = C.isLit(date) ? '#4362ff' : '#171b54';
             return new Sat(sat.satname, ol.proj.fromLonLat(loc), colour);
         }));
         drawpaths(tle.map(sat => {

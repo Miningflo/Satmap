@@ -2,7 +2,7 @@ let nightsrc = new ol.source.Vector();
 
 let nightlayer = new ol.layer.Vector({
     source: nightsrc,
-    style: function (feature) {
+    style: function () {
         return new ol.style.Style({
             fill: new ol.style.Fill({
                 color: 'rgba(0,0,0,0.1)'
@@ -103,7 +103,7 @@ function drawnight() {
     let date = new Date();
     let offset = parseInt(document.getElementById("slider").value);
     date = new Date(date.getTime() + offset*60000);
-    let sunloc = Constants.getSolarPosition(date);
+    let sunloc = C.getSolarPosition(date);
     features.push(new ol.Feature({
         geometry: new ol.geom.Point(ol.proj.fromLonLat(sunloc))
     }));
